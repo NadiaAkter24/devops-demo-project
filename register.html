@@ -6,17 +6,31 @@
 <body>
   <h2>Register</h2>
   <form>
-    <label>Full Name:</label><br>
-    <input type="text" name="fullname"><br><br>
+    <label for="fullname">Full Name:</label><br>
+    <input type="text" id="fullname" name="fullname" placeholder="John Doe"><br><br>
 
-    <label>Email:</label><br>
-    <input type="email" name="email"><br><br>
+    <label for="email">Email:</label><br>
+    <input type="email" id="email" name="email" placeholder="example@email.com"><br><br>
+    <button type="button" onclick="checkEmailAvailability()">Check Email</button>
+    <p id="email-check-result" style="color:blue;"></p><br>
 
-    <label>Password:</label><br>
-    <input type="password" name="password"><br><br>
+    <label for="password">Password:</label><br>
+    <input type="password" id="password" name="password" placeholder="Enter a strong password"><br><br>
 
-    <!-- Updated button label for clarity -->
     <button type="submit">Sign Up</button>
   </form>
+
+  <script>
+    function checkEmailAvailability() {
+      const emailInput = document.getElementById("email").value;
+      const existingEmails = ["admin@example.com", "user@example.com"]; // Dummy existing emails
+
+      const message = existingEmails.includes(emailInput)
+        ? "❌ Email is already taken!"
+        : "✅ Email is available.";
+
+      document.getElementById("email-check-result").innerText = message;
+    }
+  </script>
 </body>
 </html>
