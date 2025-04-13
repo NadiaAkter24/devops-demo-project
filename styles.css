@@ -1,9 +1,42 @@
+/* Base styling (already applied) */
 body {
   font-family: Arial, sans-serif;
-  margin: 20px;
-  padding: 20px;
+  margin: 0;
+  padding: 0;
 }
 
-form {
-  max-width: 300px;
+/* Tablet Layout */
+@media screen and (max-width: 768px) {
+  header, main {
+    padding: 15px;
+  }
+
+  nav a {
+    display: block;
+    margin: 8px 0;
+  }
+
+  h1 {
+    font-size: 1.5em;
+  }
+}
+
+/* Mobile Layout */
+@media screen and (max-width: 480px) {
+  header {
+    background-color: #f8f8f8;
+  }
+
+  nav {
+    text-align: center;
+  }
+
+  nav a {
+    font-size: 1em;
+    margin: 10px 0;
+  }
+
+  main h2 {
+    font-size: 1.2em;
+  }
 }
