@@ -5,20 +5,22 @@ pool:
   vmImage: 'ubuntu-latest'
 
 variables:
-  buildConfiguration: 'Release'
+  mavenOptions: '-Xmx3072m'
+  mavenPomFile: 'pom.xml'
+  javaVersion: '11'
 
 stages:
 - stage: Build
-  displayName: Build Stage
+  displayName: Build stage
   jobs:
-  - job: BuildJob
-    displayName: Compile Code
+  - job: MavenBuild
+    displayName: Maven Build Job
     steps:
-    - task: NodeTool@0
-      displayName: 'Install Node.js'
+    - task: Maven@3
+      displayName: 'Maven Build'
       inputs:
-        versionSpec: '14.x'
-    - script: |
-        npm install
-        npm run build
-      displayName: 'Install dependencies and compile code'
+        mavenPomFile: '$(mavenPomFile)'
+        goals: 'clean package'
+        options: '$(mavenOptions)'
+        mavenOptions: '-Dmaven.java.version=$(JavaVersion)'
+        jdkVersionOption: '$(javaVersion)'
