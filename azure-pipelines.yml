@@ -7,7 +7,9 @@ pool:
 variables:
   buildConfiguration: 'Release'
   artifactName: 'MyAppArtifact'
-  devPort: '5000' # Chosen port number for the development environment
+  qaPort: '5001'
+  stagingPort: '5002'
+  prodPort: '5003'
 
 stages:
 - stage: Deliver
@@ -48,13 +50,13 @@ stages:
         ArtifactName: '$(artifactName)'
         publishLocation: 'Container'
 
-- stage: Deploy_to_Dev
-  displayName: 'Deploy to Dev Environment'
+- stage: Deploy_to_QA
+  displayName: 'Deploy to QA Environment'
   dependsOn: Deliver
   condition: succeeded()
   jobs:
   - job: DeployJob
-    displayName: 'Deploy to Dev'
+    displayName: 'Deploy to QA'
     steps:
     - task: DownloadBuildArtifacts@0
       displayName: 'Download Build Artifacts'
@@ -62,10 +64,54 @@ stages:
         artifactName: '$(artifactName)'
 
     - task: AzureWebApp@1
-      displayName: 'Deploy to Dev App Service'
+      displayName: 'Deploy to QA App Service'
       inputs:
         azureSubscription: '<Your Azure Subscription>'
         appType: 'webApp'
-        appName: '<Your Dev App Service Name>'
+        appName: '<Your QA App Service Name>'
         packageForLinux: '$(Pipeline.Workspace)/$(artifactName)/**/*'
-        startupCommand: 'dotnet <YourAppName>.dll --urls http://*:$(devPort)'
+        startupCommand: 'dotnet <YourAppName>.dll --urls http://*:$(qaPort)'
+
+- stage: Deploy_to_Staging
+  displayName: 'Deploy to Staging Environment'
+  dependsOn: Deploy_to_QA
+  condition: succeeded()
+  jobs:
+  - job: DeployJob
+    displayName: 'Deploy to Staging'
+    steps:
+    - task: DownloadBuildArtifacts@0
+      displayName: 'Download Build Artifacts'
+      inputs:
+        artifactName: '$(artifactName)'
+
+    - task: AzureWebApp@1
+      displayName: 'Deploy to Staging App Service'
+      inputs:
+        azureSubscription: '<Your Azure Subscription>'
+        appType: 'webApp'
+        appName: '<Your Staging App Service Name>'
+        packageForLinux: '$(Pipeline.Workspace)/$(artifactName)/**/*'
+        startupCommand: 'dotnet <YourAppName>.dll --urls http://*:$(stagingPort)'
+
+- stage: Deploy_to_Production
+  displayName: 'Deploy to Production Environment'
+  dependsOn: Deploy_to_Staging
+  condition: succeeded()
+  jobs:
+  - job: DeployJob
+    displayName: 'Deploy to Production'
+    steps:
+    - task: DownloadBuildArtifacts@0
+      displayName: 'Download Build Artifacts'
+      inputs:
+        artifactName: '$(artifactName)'
+
+    - task: AzureWebApp@1
+      displayName: 'Deploy to Production App Service'
+      inputs:
+        azureSubscription: '<Your Azure Subscription>'
+        appType: 'webApp'
+        appName: '<Your Production App Service Name>'
+        packageForLinux: '$(Pipeline.Workspace)/$(artifactName)/**/*'
+        startupCommand: 'dotnet <YourAppName>.dll --urls http://*:$(prodPort)'
