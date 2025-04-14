@@ -1,8 +1,6 @@
 trigger:
 - master
 
-pool:
-  name: AgentDonalda
 
 variables:
   buildConfiguration: 'Release'
@@ -44,28 +42,7 @@ stages:
         - script: echo $(JAVA_HOME)
           displayName: 'Check JAVA_HOME'
 
-        # Step 3: SonarCloud Prepare Task
-        - task: SonarCloudPrepare@1
-          inputs:
-            SonarCloud: 'DevOps'  # Ensure the correct service connection name
-            organization: 'donaldazhuga'
-            scannerMode: 'CLI'
-            configMode: 'manual'
-            cliProjectKey: 'donaldazhuga'
-            cliProjectName: 'DevOps-Group4'
-            cliSources: '.'
-
-        # Step 4: SonarCloud Publish Quality Gate
-        - task: SonarCloudPublish@1
-          inputs:
-            pollingTimeoutSec: '300'
-
-        # Step 5: Publish Build Artifacts
-        - task: PublishBuildArtifacts@1
-          inputs:
-            PathtoPublish: 'target'
-            ArtifactName: 'drop'
-            publishLocation: 'Container'
+       
 
 # ------------------------------
 # CD - DEPLOYMENT
