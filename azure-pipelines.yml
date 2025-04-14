@@ -1,39 +1,48 @@
 trigger:
-- task: Maven@4
-- task: DotNetCoreCLI@2
-  inputs:
-    command: 'build'
-  inputs:
-    mavenPomFile: 'pom.xml'
-    publishJUnitResults: true
-    testResultsFiles: '**/surefire-reports/TEST-*.xml'
-    javaHomeOption: 'JDKVersion'
-    mavenVersionOption: 'Default'
-    mavenAuthenticateFeed: false
-    effectivePomSkip: false
-    sonarQubeRunAnalysis: false
 - main
 
 pool:
   vmImage: 'ubuntu-latest'
 
 variables:
-  mavenOptions: '-Xmx3072m'
-  mavenPomFile: 'pom.xml'
-  javaVersion: '11'
+  buildConfiguration: 'Release'
+  artifactName: 'MyAppArtifact'
 
 stages:
-- stage: Build
-  displayName: Build stage
+- stage: Deliver
+  displayName: 'Deliver Stage'
   jobs:
-  - job: MavenBuild
-    displayName: Maven Build Job
+  - job: DeliverJob
+    displayName: 'Build and Package'
     steps:
-    - task: Maven@3
-      displayName: 'Maven Build'
+    - task: DotNetCoreCLI@2
+      displayName: 'Restore NuGet packages'
       inputs:
-        mavenPomFile: '$(mavenPomFile)'
-        goals: 'clean package'
-        options: '$(mavenOptions)'
-        mavenOptions: '-Dmaven.java.version=$(JavaVersion)'
-        jdkVersionOption: '$(javaVersion)'
+        command: 'restore'
+        projects: '**/*.csproj'
+        configuration: $(buildConfiguration)
+
+    - task: DotNetCoreCLI@2
+      displayName: 'Build Project'
+      inputs:
+        command: 'build'
+        projects: '**/*.csproj'
+        arguments: '--configuration $(buildConfiguration)'
+        publishWebProjects: false
+        workingDirectory: ''
+
+    - task: DotNetCoreCLI@2
+      displayName: 'Publish Project'
+      inputs:
+        command: 'publish'
+        publishWebProjects: false
+        projects: '**/*.csproj'
+        arguments: '--configuration $(buildConfiguration) --output $(Build.ArtifactStagingDirectory)'
+        zipAfterPublish: true
+
+    - task: PublishBuildArtifacts@1
+      displayName: 'Publish Artifact'
+      inputs:
+        PathtoPublish: '$(Build.ArtifactStagingDirectory)'
+        ArtifactName: '$(artifactName)'
+        publishLocation: 'Container'
